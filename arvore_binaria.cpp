@@ -3,6 +3,10 @@
 
 using namespace std;
 
+struct Date {
+    int day;
+    int month;
+};
 
 class List_Node{
 public:
@@ -125,8 +129,22 @@ class Node{
 private:
     Node *left, *right;
     int key;
+    Date date;
 
 public:
+    Node(Date date) {
+        this->date = date;
+        left = NULL;
+        right = NULL;
+    }
+
+    void set_date(Date new_date) {
+        this->date = new_date;
+    }
+
+    Date get_date() {
+        return date;
+    }
     Node(int key){
         this->key = key;
         left = NULL;
@@ -160,37 +178,41 @@ public:
     Tree(){
         root = NULL;
     }
-    void insert(int key){
-        if (root == NULL){
-            root = new Node(key);
+    void insert(Date date) {
+    if (root == NULL) {
+        root = new Node(date);
+    } else {
+        insert_aux(root, date);
+    }
+}
+
+void insert_aux(Node *node, Date date) {
+    if (compare_dates(date, node->get_date()) < 0) {
+        if (node->get_left() == NULL) {
+            Node *new_node = new Node(date);
+            node->set_left(new_node);
+        } else {
+            insert_aux(node->get_left(), date);
         }
-        else{
-            insert_aux(root, key);
+    } else {
+        if (node->get_right() == NULL) {
+            Node *new_node = new Node(date);
+            node->set_right(new_node);
+        } else {
+            insert_aux(node->get_right(), date);
         }
     }
-    void insert_aux(Node *node, int key){
-        if (key < node->get_key()){
-            if (node->get_left() == NULL){
-                Node *new_node = new Node(key);
-                node->set_left(new_node);
-            }
-            else{
-                insert_aux(node->get_left(), key);
-            }
-        }
-        else if(key > node->get_key()){
-            if (node->get_right() == NULL){
-                Node *new_node = new Node(key);
-                node->set_right(new_node);
-            }
-            else{
-                insert_aux(node->get_right(), key);
-            }
-        }
-        else if(key == node->get_key()){
-            cout << "Number already exists";
-        }
+}
+
+int compare_dates(Date date1, Date date2) {
+    if (date1.month < date2.month) {
+        return -1;
+    } else if (date1.month > date2.month) {
+        return 1;
+    } else {
+        return date1.day - date2.day;
     }
+}
     Node* get_root(){
         return root;
     }
@@ -219,12 +241,12 @@ public:
 }
 
     void pre_order(Node* node){
-        if (node != NULL){
-            cout << node->get_key() << " ";
-            pre_order(node->get_left());
-            pre_order(node->get_right());
-        }
+    if (node != NULL){
+        cout << node->get_date().day << "/" << node->get_date().month << " ";
+        pre_order(node->get_left());
+        pre_order(node->get_right());
     }
+}
     void post_order(Node* node){
         if (node != NULL){
             post_order(node->get_left());
@@ -266,6 +288,25 @@ public:
         }
         return node;
     }
+
+    void update_value(Node* node, Date old_date, Date new_date) {
+        if (node == nullptr) {
+            return;
+    }
+
+    if (node->get_date().day == old_date.day && node->get_date().month == old_date.month) {
+        node->set_date(new_date);
+        return;
+    }
+
+    update_value(node->get_left(), old_date, new_date);
+    update_value(node->get_right(), old_date, new_date);
+    }
+
+    void update_date(Date old_date, Date new_date) {
+        update_value(root, old_date, new_date);
+    }
+
     Node* minValueNode(Node* node){
         Node* current = node;
         while (current && current->get_left() != NULL)
@@ -311,28 +352,62 @@ public:
 
 int main() {
     Tree tree;
+    bool sair = false;
 
-    int num_nodes;
-    cout << "Insira o numero de nos: ";
-    cin >> num_nodes;
+    while (!sair) {
+        cout << "Escolha uma opcao:" << endl;
+        cout << "a) Inserir valores na arvore" << endl;
+        cout << "b) Balancear a arvore" << endl;
+        cout << "c) Exibir arvore" << endl;
+        cout << "d) Sair do programa" << endl;
 
-    cout << "Insira os valores dos nos:\n";
-    for (int i = 0; i < num_nodes; ++i) {
-        int value;
-        cin >> value;
-        tree.insert(value);
+        char opcao;
+        cin >> opcao;
+
+        switch (opcao) {
+            case 'a': {
+                int num_nodes;
+                cout << "Insira o numero de nos: ";
+                cin >> num_nodes;
+
+                cout << "Insira os valores dos nos (dia e mes separados por espaco):\n";
+                for (int i = 0; i < num_nodes; ++i) {
+                    int day, month;
+                    cin >> day >> month;
+                    Date date = {day, month};
+                    tree.insert(date);
+                }
+
+                if (num_nodes >= 5) {
+                    cout << "Balanceando a arvore automaticamente..." << endl;
+                    tree.balance_tree();
+                }
+                break;
+            }
+            case 'b': {
+                cout << "Balanceando a arvore..." << endl;
+                tree.balance_tree();
+                break;
+            }
+            case 'c': {
+                if (tree.get_root() == NULL) {
+                    cout << "Arvore vazia." << endl;
+                } else {
+                    cout << "Arvore:" << endl;
+                    tree.pre_order(tree.get_root());
+                    cout << endl;
+                }
+                break;
+            }
+            case 'd': {
+                sair = true;
+                break;
+            }
+            default: {
+                cout << "Opcao invalida. Por favor, escolha novamente." << endl;
+                break;
+            }
+        }
     }
-
-    cout << "Arvore antes do balanceamento:";
-    tree.pre_order(tree.get_root());
-    tree.balance_tree();
-
-    cout << endl;
-
-    cout << "Arvore depois do balanceamento:";
-    tree.pre_order(tree.get_root());
-
-    cout << endl;
-
     return 0;
 }
