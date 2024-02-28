@@ -42,6 +42,19 @@ public:
         atual->prox = new_node_list;
     }
 
+    int get_node_value(int index) {
+        List_Node *atual = lista;
+        for (int i = 0; i < index; ++i) {
+            if (atual == nullptr)
+                throw out_of_range("Índice fora do alcance da lista.");
+            atual = atual->prox;
+        }
+        if (atual == nullptr)
+            throw out_of_range("Índice fora do alcance da lista.");
+        return atual->dado;
+    }
+
+
     void remover(int val){
         if (lista == nullptr){
             return;
@@ -197,6 +210,14 @@ public:
         }
     }
 
+    void insert_pre_order(Node* node, ListaOrdenada &lista) {
+    if (node != NULL) {
+        lista.inserir(node->get_key());
+        insert_pre_order(node->get_left(), lista);
+        insert_pre_order(node->get_right(), lista);
+    }
+}
+
     void pre_order(Node* node){
         if (node != NULL){
             cout << node->get_key() << " ";
@@ -251,27 +272,66 @@ public:
             current = current->get_left();
         return current;
     }
-};
+    int get_tree_size(Node* node) {
+            if (node == NULL)
+                return 0;
+            else
+                return get_tree_size(node->get_left()) + 1 + get_tree_size(node->get_right());
+        }
+
+        void balance_tree() {
+            int size = get_tree_size(root);
+            if (size < 5) {
+                cout << "A arvore nao precisa de balanceamento." << endl;
+                return;
+            }
+            ListaOrdenada lista;
+            insert_pre_order(root, lista);
+            delete_tree(root);
+            root = build_balanced_tree(lista, 0, size - 1);
+        }
+
+        void delete_tree(Node* node) {
+            if (node == NULL) return;
+            delete_tree(node->get_left());
+            delete_tree(node->get_right());
+            delete node;
+        }
+
+        Node* build_balanced_tree(ListaOrdenada &lista, int start, int end) {
+            if (start > end) return NULL;
+            int mid = (start + end) / 2;
+            Node* node = new Node(lista.get_node_value(mid));
+            node->set_left(build_balanced_tree(lista, start, mid - 1));
+            node->set_right(build_balanced_tree(lista, mid + 1, end));
+            return node;
+        }
+    };
 
 
-int main(){
+int main() {
     Tree tree;
-    ListaOrdenada lista;
 
     int num_nodes;
-    cout << "Insira o numero de nós: ";
+    cout << "Insira o numero de nos: ";
     cin >> num_nodes;
 
-    cout << "Insira o valor dos nós:\n";
+    cout << "Insira os valores dos nos:\n";
     for (int i = 0; i < num_nodes; ++i) {
         int value;
         cin >> value;
         tree.insert(value);
     }
 
-    cout << "Começo do balanceamento:";
-    tree.insert_in_order(tree.get_root(), lista);
-    lista.imprimir();
+    cout << "Arvore antes do balanceamento:";
+    tree.pre_order(tree.get_root());
+    tree.balance_tree();
+
+    cout << endl;
+
+    cout << "Arvore depois do balanceamento:";
+    tree.pre_order(tree.get_root());
+
     cout << endl;
 
     return 0;
