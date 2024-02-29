@@ -296,11 +296,15 @@ int compare_dates(Date date1, Date date2) {
 
     Node* build_balanced_tree(ListaOrdenada &lista, int start, int end) {
         if (start > end) return NULL;
-            float mid = (start + end) / 2;
-            lround (mid);
-            Node* node = new Node(lista.get_node_value(mid));
-            node->set_left(build_balanced_tree(lista, start, mid - 1));
-            node->set_right(build_balanced_tree(lista, mid + 1, end));
+            int mid = (start + end) / 2;
+            int mid_value = lista.get_node_value(mid);
+            int day = mid_value / 100;
+            int month = mid_value & 100;
+            Date date = {day, month};
+            Node *node = new Node(date);
+
+            node->set_left(build_balanced_tree(lista, start, mid));
+            node->set_right(build_balanced_tree(lista, mid +1, end));
             return node;
     }
 
