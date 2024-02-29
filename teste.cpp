@@ -88,32 +88,6 @@ List_Node* encontrar_mediana(List_Node* inicio, int tamanho) {
     return atual;
 }
 
-List_Node* mediana_recursiva(List_Node* inicio, int tamanho) {
-    if (tamanho == 1) {
-        return inicio;
-    }
-
-    int nova_tamanho = (tamanho + 1) / 2;
-    List_Node* mediana = encontrar_mediana(inicio, tamanho);
-    return mediana_recursiva(mediana, nova_tamanho);
-}
-
-void mediana() {
-    int counter = 0;
-    List_Node* atual = lista;
-    while (atual != nullptr) {
-        counter += 1;
-        atual = atual->prox;
-    }
-
-    if (counter == 0) {
-        cout << "Lista vazia." << endl;
-        return;
-    }
-
-    List_Node* mediana = mediana_recursiva(lista, counter);
-    cout << "Mediana: " << mediana->dado << endl;
-}
     void imprimir(){
         List_Node *atual = lista;
         while (atual != nullptr){
@@ -225,19 +199,11 @@ int compare_dates(Date date1, Date date2) {
         }
     }
 
-    void insert_in_order(Node* node, ListaOrdenada &lista){
-        if (node != NULL){
-            insert_in_order(node->get_left(), lista);
-            lista.inserir(node->get_key());
-            insert_in_order(node->get_right(), lista);
-        }
-    }
-
-    void insert_pre_order(Node* node, ListaOrdenada &lista) {
+    void insert_in_tree(Node* node, ListaOrdenada &lista) {
         if (node != NULL) {
             lista.inserir(node->get_date().day * 100 + node->get_date().month);
-            insert_pre_order(node->get_left(), lista);
-            insert_pre_order(node->get_right(), lista);
+            insert_in_tree(node->get_left(), lista);
+            insert_in_tree(node->get_right(), lista);
         }
     }
 
@@ -256,13 +222,7 @@ int compare_dates(Date date1, Date date2) {
             cout << node->get_key() << " ";
         }
     }
-    Node* search(Node* node, int key){
-        if (node == NULL || node->get_key() == key)
-            return node;
-        if (key < node->get_key())
-            return search(node->get_left(), key);
-        return search(node->get_right(), key);
-    }
+
     void remove(int key){
         root = remove_aux(root, key);
     }
@@ -329,27 +289,28 @@ int compare_dates(Date date1, Date date2) {
             return;
         }
         ListaOrdenada lista;
-        insert_pre_order(root, lista);
+        insert_in_tree(root, lista);
         delete_tree(root);
         root = build_balanced_tree(lista, 0, size - 1);
     }
 
     Node* build_balanced_tree(ListaOrdenada &lista, int start, int end) {
         if (start > end) return NULL;
-        int mid = (start + end) / 2;
-        Node* node = new Node(lista.get_node_value(mid));
-        node->set_left(build_balanced_tree(lista, start, mid - 1));
-        node->set_right(build_balanced_tree(lista, mid + 1, end));
-        return node;
+            float mid = (start + end) / 2;
+            lround (mid);
+            Node* node = new Node(lista.get_node_value(mid));
+            node->set_left(build_balanced_tree(lista, start, mid - 1));
+            node->set_right(build_balanced_tree(lista, mid + 1, end));
+            return node;
     }
 
 
-        void delete_tree(Node* node) {
-            if (node == NULL) return;
-            delete_tree(node->get_left());
-            delete_tree(node->get_right());
-            delete node;
-        }
+    void delete_tree(Node* node) {
+        if (node == NULL) return;
+        delete_tree(node->get_left());
+        delete_tree(node->get_right());
+        delete node;
+    }
     
     void encontrar_no(Node* node, Date target_date, Node*& result_node) {
         result_node = NULL;
@@ -365,8 +326,6 @@ int compare_dates(Date date1, Date date2) {
         encontrar_no(node->get_left(), target_date, result_node);
         encontrar_no(node->get_right(), target_date, result_node);
     }
-
-
 };
 
 
