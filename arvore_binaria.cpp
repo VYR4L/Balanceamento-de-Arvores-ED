@@ -50,11 +50,11 @@ public:
         List_Node *atual = lista;
         for (int i = 0; i < index; ++i) {
             if (atual == nullptr)
-                throw out_of_range("Índice fora do alcance da lista.");
+                throw out_of_range("Indice fora do alcance da lista.");
             atual = atual->prox;
         }
         if (atual == nullptr)
-            throw out_of_range("Índice fora do alcance da lista.");
+            throw out_of_range("Indice fora do alcance da lista.");
         return atual->dado;
     }
 
@@ -79,51 +79,7 @@ public:
             delete temp;
         }
     }
-
-List_Node* encontrar_mediana(List_Node* inicio, int tamanho) {
-    List_Node* atual = inicio;
-    for (int i = 0; i < tamanho / 2; ++i) {
-        atual = atual->prox;
-    }
-    return atual;
-}
-
-List_Node* mediana_recursiva(List_Node* inicio, int tamanho) {
-    if (tamanho == 1) {
-        return inicio;
-    }
-
-    int nova_tamanho = (tamanho + 1) / 2;
-    List_Node* mediana = encontrar_mediana(inicio, tamanho);
-    return mediana_recursiva(mediana, nova_tamanho);
-}
-
-void mediana() {
-    int counter = 0;
-    List_Node* atual = lista;
-    while (atual != nullptr) {
-        counter += 1;
-        atual = atual->prox;
-    }
-
-    if (counter == 0) {
-        cout << "Lista vazia." << endl;
-        return;
-    }
-
-    List_Node* mediana = mediana_recursiva(lista, counter);
-    cout << "Mediana: " << mediana->dado << endl;
-}
-    void imprimir(){
-        List_Node *atual = lista;
-        while (atual != nullptr){
-            std::cout << atual->dado << " ";
-            atual = atual->prox;
-        }
-        std::cout << std::endl;
-    }
 };
-
 
 class Node{
 private:
@@ -138,13 +94,14 @@ public:
         right = NULL;
     }
 
+    Date get_date() {
+        return date;
+    }
+
     void set_date(Date new_date) {
         this->date = new_date;
     }
 
-    Date get_date() {
-        return date;
-    }
     Node(int key){
         this->key = key;
         left = NULL;
@@ -219,26 +176,19 @@ int compare_dates(Date date1, Date date2) {
     void in_order(Node* node){
         if (node != NULL){
             in_order(node->get_left());
-            cout << node->get_key() << " ";
+            cout << node->get_date().day << "/" << node->get_date().month << " ";
             in_order(node->get_right());
         }
     }
 
-    void insert_in_order(Node* node, ListaOrdenada &lista){
+    void insert_in_tree(Node* node, ListaOrdenada &lista){
         if (node != NULL){
-            insert_in_order(node->get_left(), lista);
+            insert_in_tree(node->get_left(), lista);
             lista.inserir(node->get_key());
-            insert_in_order(node->get_right(), lista);
+            insert_in_tree(node->get_right(), lista);
         }
     }
 
-    void insert_pre_order(Node* node, ListaOrdenada &lista) {
-    if (node != NULL) {
-        lista.inserir(node->get_key());
-        insert_pre_order(node->get_left(), lista);
-        insert_pre_order(node->get_right(), lista);
-    }
-}
 
     void pre_order(Node* node){
     if (node != NULL){
@@ -254,23 +204,18 @@ int compare_dates(Date date1, Date date2) {
             cout << node->get_key() << " ";
         }
     }
-    Node* search(Node* node, int key){
-        if (node == NULL || node->get_key() == key)
-            return node;
-        if (key < node->get_key())
-            return search(node->get_left(), key);
-        return search(node->get_right(), key);
+
+    void remove(Date date){
+        root = remove_aux(root, date);
     }
-    void remove(int key){
-        root = remove_aux(root, key);
-    }
-    Node* remove_aux(Node* node, int key){
+
+    Node* remove_aux(Node* node, Date date){
         if (node == NULL) return node;
 
-        if (key < node->get_key())
-            node->set_left(remove_aux(node->get_left(), key));
-        else if (key > node->get_key())
-            node->set_right(remove_aux(node->get_right(), key));
+        if (compare_dates(date, node->get_date()) < 0)
+            node->set_left(remove_aux(node->get_left(), date));
+        else if (compare_dates(date, node->get_date()) > 0)
+            node->set_right(remove_aux(node->get_right(), date));
         else {
             if (node->get_left() == NULL) {
                 Node* temp = node->get_right();
@@ -283,29 +228,33 @@ int compare_dates(Date date1, Date date2) {
                 return temp;
             }
             Node* temp = minValueNode(node->get_right());
-            node->set_key(temp->get_key());
-            node->set_right(remove_aux(node->get_right(), temp->get_key()));
+            node->set_date(temp->get_date());
+            node->set_right(remove_aux(node->get_right(), temp->get_date()));
         }
         return node;
     }
 
+
     void update_value(Node* node, Date old_date, Date new_date) {
         if (node == nullptr) {
             return;
-    }
+        }
 
-    if (node->get_date().day == old_date.day && node->get_date().month == old_date.month) {
-        node->set_date(new_date);
-        return;
-    }
+        if (node->get_date().day == old_date.day && node->get_date().month == old_date.month) {
+            node->set_date(new_date);
+            cout << "Data atualizada com sucesso!" << endl;
+            return; // Saia assim que a data for atualizada para evitar alterações desnecessárias.
+        }
 
-    update_value(node->get_left(), old_date, new_date);
-    update_value(node->get_right(), old_date, new_date);
+        // Continue a busca na subárvore esquerda e direita.
+        update_value(node->get_left(), old_date, new_date);
+        update_value(node->get_right(), old_date, new_date);
     }
 
     void update_date(Date old_date, Date new_date) {
         update_value(root, old_date, new_date);
     }
+
 
     Node* minValueNode(Node* node){
         Node* current = node;
@@ -320,34 +269,63 @@ int compare_dates(Date date1, Date date2) {
                 return get_tree_size(node->get_left()) + 1 + get_tree_size(node->get_right());
         }
 
-        void balance_tree() {
-            int size = get_tree_size(root);
-            if (size < 5) {
-                cout << "A arvore nao precisa de balanceamento." << endl;
-                return;
-            }
-            ListaOrdenada lista;
-            insert_pre_order(root, lista);
-            delete_tree(root);
-            root = build_balanced_tree(lista, 0, size - 1);
+    Node* balance_tree_recursive(ListaOrdenada &lista, int start, int end) {
+    if (start > end) return NULL;
+
+    int mid = (start + end) / 2;
+
+    Node* left_subtree = balance_tree_recursive(lista, start, mid - 1);
+    Node* root = new Node(lista.get_node_value(mid)); 
+    Node* right_subtree = balance_tree_recursive(lista, mid + 1, end);
+
+    root->set_left(left_subtree);
+    root->set_right(right_subtree);
+
+    return root;
+}
+
+void balance_tree() {
+    int size = get_tree_size(root);
+    cout << "Tamanho da arvore antes do balanceamento: " << size << endl;
+
+    if (size < 5) {
+        cout << "A arvore nao precisa de balanceamento." << endl;
+        return;
+    }
+
+    ListaOrdenada lista;
+    insert_in_tree(root, lista);
+    delete_tree(root);
+
+    root = balance_tree_recursive(lista, 0, size - 1);
+
+    cout << "Arvore balanceada:" << endl;
+    pre_order(root);
+    cout << endl;
+}
+
+    void delete_tree(Node* node) {
+        if (node == NULL) return;
+        delete_tree(node->get_left());
+        delete_tree(node->get_right());
+        delete node;
+    }
+    
+    void encontrar_no(Node* node, Date target_date, Node*& result_node) {
+        result_node = NULL;
+        if (node == NULL) {
+            return;
         }
 
-        void delete_tree(Node* node) {
-            if (node == NULL) return;
-            delete_tree(node->get_left());
-            delete_tree(node->get_right());
-            delete node;
+        if (node->get_date().day == target_date.day && node->get_date().month == target_date.month) {
+            result_node = node;
+            return;
         }
 
-        Node* build_balanced_tree(ListaOrdenada &lista, int start, int end) {
-            if (start > end) return NULL;
-            int mid = (start + end) / 2;
-            Node* node = new Node(lista.get_node_value(mid));
-            node->set_left(build_balanced_tree(lista, start, mid - 1));
-            node->set_right(build_balanced_tree(lista, mid + 1, end));
-            return node;
-        }
-    };
+        encontrar_no(node->get_left(), target_date, result_node);
+        encontrar_no(node->get_right(), target_date, result_node);
+    }
+};
 
 
 int main() {
@@ -359,7 +337,10 @@ int main() {
         cout << "a) Inserir valores na arvore" << endl;
         cout << "b) Balancear a arvore" << endl;
         cout << "c) Exibir arvore" << endl;
-        cout << "d) Sair do programa" << endl;
+        cout << "d) Atualizar arvore" << endl;
+        cout << "e) Remover data" << endl;
+        cout << "f) Excluir completamente a árvore" << endl;
+        cout << "g) Sair do programa" << endl;
 
         char opcao;
         cin >> opcao;
@@ -400,9 +381,34 @@ int main() {
                 break;
             }
             case 'd': {
+                int day, month, new_day, new_month;
+                cout << "Digite a data que deseja alterar (dia mês): ";
+                cin >> day >> month;
+                Date old_date = {day, month};
+
+                cout << "Insira a nova data (dia mês): ";
+                cin >> new_day >> new_month;
+                Date new_date = {new_day, new_month};
+
+                tree.update_date(old_date, new_date);
+                break;
+            }
+            case 'e': {
+                int day, month;
+                cout << "Digite a data que deseja remover (dia mês): ";
+                cin >> day >> month;
+                Date date = {day, month};
+                tree.remove(date);
+                break;
+            }
+            case 'f': {
+                tree.delete_tree(tree.get_root());
+            }
+            case 'g': {
                 sair = true;
                 break;
             }
+
             default: {
                 cout << "Opcao invalida. Por favor, escolha novamente." << endl;
                 break;
