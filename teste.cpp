@@ -173,6 +173,27 @@ void insert_aux(Node *node, Date date, string job) {
     }
 }
 
+void update_job(Node* node, string job,string new_job){
+        if (node == nullptr) {
+            return;
+        }
+
+        if (node->get_job() == job) {
+            node->set_job(new_job);
+            cout << "Compromisso atualizado com sucesso!" << endl;
+            return;
+        }
+        
+        update_job(node->get_left(), job, new_job);
+        update_job(node->get_right(), job, new_job);
+    }
+
+    void update_job2(string job, string new_job) {
+        update_job(root, job ,new_job);
+    }
+
+
+
 int compare_dates(Date date1, Date date2) {
     if (date1.month < date2.month) {
         return -1;
@@ -350,8 +371,9 @@ int main() {
         cout << "c) Exibir arvore" << endl;
         cout << "d) Atualizar arvore" << endl;
         cout << "e) Remover data" << endl;
-        cout << "f) Excluir completamente a árvore" << endl;
-        cout << "g) Sair do programa" << endl;
+        cout << "f) Alterar um compromisso" << endl;
+        cout << "g) Excluir completamente a árvore" << endl;
+        cout << "h) Sair do programa" << endl;
 
         char opcao;
         cin >> opcao;
@@ -362,7 +384,7 @@ int main() {
                 cout << "Insira o numero de nos: ";
                 cin >> num_nodes;
 
-                cout << "Insira os valores dos nos (dia e mes separados por espaco):\n";
+                cout << "Insira os valores dos dias (dia e mes separados por espaco) e o seu compromisso:\n";
                 for (int i = 0; i < num_nodes; ++i) {
                     int day, month;
                     string job;
@@ -414,9 +436,17 @@ int main() {
                 break;
             }
             case 'f': {
-                tree.delete_tree(tree.get_root());
+                string job, new_job;
+                cout << "Digite o compromisso que deseja substituir: ";
+                cin >> job;
+                cout << "Insira o novo compromisso: ";
+                cin >> new_job;
+                tree.update_job2(job, new_job);
             }
             case 'g': {
+                tree.delete_tree(tree.get_root());
+            }
+            case 'h': {
                 sair = true;
                 break;
             }
