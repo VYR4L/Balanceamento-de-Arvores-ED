@@ -50,11 +50,11 @@ public:
         List_Node *atual = lista;
         for (int i = 0; i < index; ++i) {
             if (atual == nullptr)
-                throw out_of_range("Índice fora do alcance da lista.");
+                throw out_of_range("Indice fora do alcance da lista.");
             atual = atual->prox;
         }
         if (atual == nullptr)
-            throw out_of_range("Índice fora do alcance da lista.");
+            throw out_of_range("Indice fora do alcance da lista.");
         return atual->dado;
     }
 
@@ -79,37 +79,31 @@ public:
             delete temp;
         }
     }
-
-List_Node* encontrar_mediana(List_Node* inicio, int tamanho) {
-    List_Node* atual = inicio;
-    for (int i = 0; i < tamanho / 2; ++i) {
-        atual = atual->prox;
-    }
-    return atual;
-}
-
-    void imprimir(){
-        List_Node *atual = lista;
-        while (atual != nullptr){
-            std::cout << atual->dado << " ";
-            atual = atual->prox;
-        }
-        std::cout << std::endl;
-    }
 };
-
 
 class Node{
 private:
     Node *left, *right;
     int key;
     Date date;
+    string job;
 
 public:
-    Node(Date date) {
+    
+
+    Node(Date date, string job) {
         this->date = date;
+        this->job = job;
         left = NULL;
         right = NULL;
+    }
+
+    string get_job(){
+        return job;
+    }
+
+    void set_job(string job){
+        this->job = job;
     }
 
     Date get_date() {
@@ -153,28 +147,28 @@ public:
     Tree(){
         root = NULL;
     }
-    void insert(Date date) {
+    void insert(Date date, string job) {
     if (root == NULL) {
-        root = new Node(date);
+        root = new Node(date, job);
     } else {
-        insert_aux(root, date);
+        insert_aux(root, date, job);
     }
 }
 
-void insert_aux(Node *node, Date date) {
+void insert_aux(Node *node, Date date, string job) {
     if (compare_dates(date, node->get_date()) < 0) {
         if (node->get_left() == NULL) {
-            Node *new_node = new Node(date);
+            Node *new_node = new Node(date, job);
             node->set_left(new_node);
         } else {
-            insert_aux(node->get_left(), date);
+            insert_aux(node->get_left(), date, job);
         }
     } else {
         if (node->get_right() == NULL) {
-            Node *new_node = new Node(date);
+            Node *new_node = new Node(date, job);
             node->set_right(new_node);
         } else {
-            insert_aux(node->get_right(), date);
+            insert_aux(node->get_right(), date, job);
         }
     }
 }
@@ -194,15 +188,15 @@ int compare_dates(Date date1, Date date2) {
     void in_order(Node* node){
         if (node != NULL){
             in_order(node->get_left());
-            cout << node->get_key() << " ";
+            cout << node->get_date().day << "/" << node->get_date().month << " ";
             in_order(node->get_right());
         }
     }
 
-    void insert_in_tree(Node* node, ListaOrdenada &lista) {
-        if (node != NULL) {
-            lista.inserir(node->get_date().day * 100 + node->get_date().month);
+    void insert_in_tree(Node* node, ListaOrdenada &lista){
+        if (node != NULL){
             insert_in_tree(node->get_left(), lista);
+            lista.inserir(node->get_key());
             insert_in_tree(node->get_right(), lista);
         }
     }
@@ -210,7 +204,7 @@ int compare_dates(Date date1, Date date2) {
 
     void pre_order(Node* node){
     if (node != NULL){
-        cout << node->get_date().day << "/" << node->get_date().month << " ";
+        cout << node->get_date().day << "/" << node->get_date().month << " " << node->get_job() << " " << endl;
         pre_order(node->get_left());
         pre_order(node->get_right());
     }
@@ -223,16 +217,17 @@ int compare_dates(Date date1, Date date2) {
         }
     }
 
-    void remove(int key){
-        root = remove_aux(root, key);
+    void remove(Date date){
+        root = remove_aux(root, date);
     }
-    Node* remove_aux(Node* node, int key){
+
+    Node* remove_aux(Node* node, Date date){
         if (node == NULL) return node;
 
-        if (key < node->get_key())
-            node->set_left(remove_aux(node->get_left(), key));
-        else if (key > node->get_key())
-            node->set_right(remove_aux(node->get_right(), key));
+        if (compare_dates(date, node->get_date()) < 0)
+            node->set_left(remove_aux(node->get_left(), date));
+        else if (compare_dates(date, node->get_date()) > 0)
+            node->set_right(remove_aux(node->get_right(), date));
         else {
             if (node->get_left() == NULL) {
                 Node* temp = node->get_right();
@@ -245,29 +240,32 @@ int compare_dates(Date date1, Date date2) {
                 return temp;
             }
             Node* temp = minValueNode(node->get_right());
-            node->set_key(temp->get_key());
-            node->set_right(remove_aux(node->get_right(), temp->get_key()));
+            node->set_date(temp->get_date());
+            node->set_right(remove_aux(node->get_right(), temp->get_date()));
         }
         return node;
     }
 
+
     void update_value(Node* node, Date old_date, Date new_date) {
         if (node == nullptr) {
             return;
-    }
+        }
 
-    if (node->get_date().day == old_date.day && node->get_date().month == old_date.month) {
-        node->set_date(new_date);
-        return;
-    }
-
-    update_value(node->get_left(), old_date, new_date);
-    update_value(node->get_right(), old_date, new_date);
+        if (node->get_date().day == old_date.day && node->get_date().month == old_date.month) {
+            node->set_date(new_date);
+            cout << "Data atualizada com sucesso!" << endl;
+            return;
+        }
+        
+        update_value(node->get_left(), old_date, new_date);
+        update_value(node->get_right(), old_date, new_date);
     }
 
     void update_date(Date old_date, Date new_date) {
         update_value(root, old_date, new_date);
     }
+
 
     Node* minValueNode(Node* node){
         Node* current = node;
@@ -282,32 +280,40 @@ int compare_dates(Date date1, Date date2) {
                 return get_tree_size(node->get_left()) + 1 + get_tree_size(node->get_right());
         }
 
-    void balance_tree() {
-        int size = get_tree_size(root);
-        if (size < 5) {
-            cout << "A arvore nao precisa de balanceamento." << endl;
-            return;
-        }
-        ListaOrdenada lista;
-        insert_in_tree(root, lista);
-        delete_tree(root);
-        root = build_balanced_tree(lista, 0, size - 1);
+    Node* balance_tree_recursive(ListaOrdenada &lista, int start, int end) {
+    if (start > end) return NULL;
+
+    int mid = (start + end) / 2;
+
+    Node* left_subtree = balance_tree_recursive(lista, start, mid - 1);
+    Node* root = new Node(lista.get_node_value(mid)); 
+    Node* right_subtree = balance_tree_recursive(lista, mid + 1, end);
+
+    root->set_left(left_subtree);
+    root->set_right(right_subtree);
+
+    return root;
+}
+
+void balance_tree() {
+    int size = get_tree_size(root);
+    cout << "Tamanho da arvore antes do balanceamento: " << size << endl;
+
+    if (size < 5) {
+        cout << "A arvore nao precisa de balanceamento." << endl;
+        return;
     }
 
-    Node* build_balanced_tree(ListaOrdenada &lista, int start, int end) {
-        if (start > end) return NULL;
-            int mid = (start + end) / 2;
-            int mid_value = lista.get_node_value(mid);
-            int day = mid_value / 100;
-            int month = mid_value & 100;
-            Date date = {day, month};
-            Node *node = new Node(date);
+    ListaOrdenada lista;
+    insert_in_tree(root, lista);
+    delete_tree(root);
 
-            node->set_left(build_balanced_tree(lista, start, mid));
-            node->set_right(build_balanced_tree(lista, mid +1, end));
-            return node;
-    }
+    root = balance_tree_recursive(lista, 0, size - 1);
 
+    cout << "Arvore balanceada:" << endl;
+    pre_order(root);
+    cout << endl;
+}
 
     void delete_tree(Node* node) {
         if (node == NULL) return;
@@ -343,7 +349,9 @@ int main() {
         cout << "b) Balancear a arvore" << endl;
         cout << "c) Exibir arvore" << endl;
         cout << "d) Atualizar arvore" << endl;
-        cout << "e) Sair do programa" << endl;
+        cout << "e) Remover data" << endl;
+        cout << "f) Excluir completamente a árvore" << endl;
+        cout << "g) Sair do programa" << endl;
 
         char opcao;
         cin >> opcao;
@@ -357,9 +365,10 @@ int main() {
                 cout << "Insira os valores dos nos (dia e mes separados por espaco):\n";
                 for (int i = 0; i < num_nodes; ++i) {
                     int day, month;
-                    cin >> day >> month;
+                    string job;
+                    cin >> day >> month >> job;
                     Date date = {day, month};
-                    tree.insert(date);
+                    tree.insert(date, job);
                 }
 
                 if (num_nodes >= 5) {
@@ -384,25 +393,30 @@ int main() {
                 break;
             }
             case 'd': {
-                int day, month;
-                int new_day, new_month;
-                cout << "Digite a data que deseja alterar:" << endl;
+                int day, month, new_day, new_month;
+                cout << "Digite a data que deseja alterar (dia mês): ";
                 cin >> day >> month;
                 Date old_date = {day, month};
-                Node *old_date_node = NULL;
-                tree.encontrar_no(tree.get_root(), old_date, old_date_node);
-                if (old_date_node != NULL) {
-                    cout << "Insira a nova data:" << endl;
-                    cin >> new_day >> new_month;
-                    Date new_date = {new_day, new_month};
-                    old_date_node->set_date(new_date);
-                    cout << "Data atualizada com sucesso!" << endl;
-                } else {
-                    cout << "Data nao encontrada na arvore." << endl;
-                }
+
+                cout << "Insira a nova data (dia mês): ";
+                cin >> new_day >> new_month;
+                Date new_date = {new_day, new_month};
+
+                tree.update_date(old_date, new_date);
                 break;
             }
             case 'e': {
+                int day, month;
+                cout << "Digite a data que deseja remover (dia mês): ";
+                cin >> day >> month;
+                Date date = {day, month};
+                tree.remove(date);
+                break;
+            }
+            case 'f': {
+                tree.delete_tree(tree.get_root());
+            }
+            case 'g': {
                 sair = true;
                 break;
             }
