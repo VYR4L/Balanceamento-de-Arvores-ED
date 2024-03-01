@@ -243,10 +243,9 @@ int compare_dates(Date date1, Date date2) {
         if (node->get_date().day == old_date.day && node->get_date().month == old_date.month) {
             node->set_date(new_date);
             cout << "Data atualizada com sucesso!" << endl;
-            return; // Saia assim que a data for atualizada para evitar alterações desnecessárias.
+            return;
         }
-
-        // Continue a busca na subárvore esquerda e direita.
+        
         update_value(node->get_left(), old_date, new_date);
         update_value(node->get_right(), old_date, new_date);
     }
