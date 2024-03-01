@@ -86,12 +86,24 @@ private:
     Node *left, *right;
     int key;
     Date date;
+    string job;
 
 public:
-    Node(Date date) {
+    
+
+    Node(Date date, string job) {
         this->date = date;
+        this->job = job;
         left = NULL;
         right = NULL;
+    }
+
+    string get_job(){
+        return job;
+    }
+
+    void set_job(string job){
+        this->job = job;
     }
 
     Date get_date() {
@@ -135,31 +147,52 @@ public:
     Tree(){
         root = NULL;
     }
-    void insert(Date date) {
+    void insert(Date date, string job) {
     if (root == NULL) {
-        root = new Node(date);
+        root = new Node(date, job);
     } else {
-        insert_aux(root, date);
+        insert_aux(root, date, job);
     }
 }
 
-void insert_aux(Node *node, Date date) {
+void insert_aux(Node *node, Date date, string job) {
     if (compare_dates(date, node->get_date()) < 0) {
         if (node->get_left() == NULL) {
-            Node *new_node = new Node(date);
+            Node *new_node = new Node(date, job);
             node->set_left(new_node);
         } else {
-            insert_aux(node->get_left(), date);
+            insert_aux(node->get_left(), date, job);
         }
     } else {
         if (node->get_right() == NULL) {
-            Node *new_node = new Node(date);
+            Node *new_node = new Node(date, job);
             node->set_right(new_node);
         } else {
-            insert_aux(node->get_right(), date);
+            insert_aux(node->get_right(), date, job);
         }
     }
 }
+
+void update_job(Node* node, string job,string new_job){
+        if (node == nullptr) {
+            return;
+        }
+
+        if (node->get_job() == job) {
+            node->set_job(new_job);
+            cout << "Compromisso atualizado com sucesso!" << endl;
+            return;
+        }
+        
+        update_job(node->get_left(), job, new_job);
+        update_job(node->get_right(), job, new_job);
+    }
+
+    void update_job2(string job, string new_job) {
+        update_job(root, job ,new_job);
+    }
+
+
 
 int compare_dates(Date date1, Date date2) {
     if (date1.month < date2.month) {
@@ -192,7 +225,7 @@ int compare_dates(Date date1, Date date2) {
 
     void pre_order(Node* node){
     if (node != NULL){
-        cout << node->get_date().day << "/" << node->get_date().month << " ";
+        cout << node->get_date().day << "/" << node->get_date().month << " " << node->get_job() << " " << endl;
         pre_order(node->get_left());
         pre_order(node->get_right());
     }
@@ -338,8 +371,9 @@ int main() {
         cout << "c) Exibir arvore" << endl;
         cout << "d) Atualizar arvore" << endl;
         cout << "e) Remover data" << endl;
-        cout << "f) Excluir completamente a árvore" << endl;
-        cout << "g) Sair do programa" << endl;
+        cout << "f) Alterar um compromisso" << endl;
+        cout << "g) Excluir completamente a arvore" << endl;
+        cout << "h) Sair do programa" << endl;
 
         char opcao;
         cin >> opcao;
@@ -350,12 +384,13 @@ int main() {
                 cout << "Insira o numero de nos: ";
                 cin >> num_nodes;
 
-                cout << "Insira os valores dos nos (dia e mes separados por espaco):\n";
+                cout << "Insira os valores dos dias e o seu compromisso separados por espaço (dia mes compromisso):\n";
                 for (int i = 0; i < num_nodes; ++i) {
                     int day, month;
-                    cin >> day >> month;
+                    string job;
+                    cin >> day >> month >> job;
                     Date date = {day, month};
-                    tree.insert(date);
+                    tree.insert(date, job);
                 }
 
                 if (num_nodes >= 5) {
@@ -381,11 +416,11 @@ int main() {
             }
             case 'd': {
                 int day, month, new_day, new_month;
-                cout << "Digite a data que deseja alterar (dia mês): ";
+                cout << "Digite a data que deseja alterar (dia mes): ";
                 cin >> day >> month;
                 Date old_date = {day, month};
 
-                cout << "Insira a nova data (dia mês): ";
+                cout << "Insira a nova data (dia mes): ";
                 cin >> new_day >> new_month;
                 Date new_date = {new_day, new_month};
 
@@ -394,16 +429,24 @@ int main() {
             }
             case 'e': {
                 int day, month;
-                cout << "Digite a data que deseja remover (dia mês): ";
+                cout << "Digite a data que deseja remover (dia mes): ";
                 cin >> day >> month;
                 Date date = {day, month};
                 tree.remove(date);
                 break;
             }
             case 'f': {
-                tree.delete_tree(tree.get_root());
+                string job, new_job;
+                cout << "Digite o compromisso que deseja substituir: ";
+                cin >> job;
+                cout << "Insira o novo compromisso: ";
+                cin >> new_job;
+                tree.update_job2(job, new_job);
             }
             case 'g': {
+                tree.delete_tree(tree.get_root());
+            }
+            case 'h': {
                 sair = true;
                 break;
             }
